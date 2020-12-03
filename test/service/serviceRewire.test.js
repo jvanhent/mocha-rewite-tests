@@ -25,28 +25,28 @@ describe('Service Rewire test', function () {
 			})(fn)
 		}
 
-		it('should return false when the id > 100', async function () {
+		it('should return true when product found', function (done) {
 			const product = { name: 'myProduct' }
 			wrapFetch(product, async function () {
 				const isP = await service.isExistingProduct(200)
-				assert(!isP, 'Product should not exist')
+				done(assert(isP, 'Product should not exist'))
 			})
 		})
 
-		it('should return true when the id < 100', async function () {
+		it('should return false when product not found', function (done) {
 			wrapFetch(null, async function () {
 				const isP = await service.isExistingProduct(10)
-				assert(isP, 'Product should not exist')
+				done(assert(!isP, 'Product should not exist'))
 			})
 		})
 
-		it('should throw when no id', async function () {
+		it('should throw when no id', function (done) {
 			wrapFetchThrow(async function () {
 				try {
 					await service.isExistingProduct(10)
 					fail('should not get here')
 				} catch (err) {
-					assert.strictEqual(err.message, 'Id missing', 'Product should not exist')
+					done(assert.strictEqual(err.message, 'fetch failed', 'Should have thrown'))
 				}
 			})
 		})
@@ -60,23 +60,23 @@ describe('Service Rewire test', function () {
 
 		const wrapAll = function (p, fn) {
 			service.__with__({
-				fetcher: { fetchProduct: async  (id) => p },
+				fetcher: { fetchProduct: async (id) => p },
 				creator: { create: async () => 'created' },
 				updator: { update: async () => 'updated' },
 				refetcher: { fetchProduct: async (prod, operation) => `${prod.name} ${operation}` },
 			})(fn)
 		}
-		it('should create when the id > 100', async function () {
+		it('should create when the id > 100', function (done) {
 			wrapAll(null, async () => {
 				const res = await service.createOrUpdate(200, product)
-				assert.strictEqual(res, 'myProduct created', 'Product should be created')
+				done(assert.strictEqual(res, 'myProduct created', 'Product should be created'))
 			})
 		})
 
-		it('should update when the id < 100', async function () {
+		it('should update when the id < 100', function (done) {
 			wrapAll(product, async () => {
 				const res = await service.createOrUpdate(10, product)
-				assert.strictEqual(res, 'updated', 'Product should be updated')
+				done(assert.strictEqual(res, 'myProduct updated', 'Product should be updated'))
 			})
 		})
 	})
