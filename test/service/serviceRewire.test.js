@@ -28,15 +28,23 @@ describe('Service Rewire test', function () {
 		it('should return true when product found', function (done) {
 			const product = { name: 'myProduct' }
 			wrapFetch(product, async function () {
-				const isP = await service.isExistingProduct(200)
-				done(assert(isP, 'Product should not exist'))
+				try {
+					const isP = await service.isExistingProduct(200)
+					done(assert(isP, 'Product should not exist'))
+				} catch (err) {
+					done(assert.strictEqual(err.message, 'fetch failed', 'Should have thrown'))
+				}
 			})
 		})
 
 		it('should return false when product not found', function (done) {
 			wrapFetch(null, async function () {
-				const isP = await service.isExistingProduct(10)
-				done(assert(!isP, 'Product should not exist'))
+				try {
+					const isP = await service.isExistingProduct(10)
+					done(assert(!isP, 'Product should not exist'))
+				} catch (err) {
+					done(assert.strictEqual(err.message, 'fetch failed', 'Should have thrown'))
+				}
 			})
 		})
 
@@ -68,15 +76,25 @@ describe('Service Rewire test', function () {
 		}
 		it('should create when the id > 100', function (done) {
 			wrapAll(null, async () => {
-				const res = await service.createOrUpdate(200, product)
-				done(assert.strictEqual(res, 'myProduct created', 'Product should be created'))
+				try {
+					const res = await service.createOrUpdate(200, product)
+					assert.strictEqual(res, 'myProduct created', 'Product should be created')
+					done()
+				} catch (err) {
+					done(err)
+				}
 			})
 		})
 
 		it('should update when the id < 100', function (done) {
 			wrapAll(product, async () => {
-				const res = await service.createOrUpdate(10, product)
-				done(assert.strictEqual(res, 'myProduct updated', 'Product should be updated'))
+				try {
+					const res = await service.createOrUpdate(10, product)
+					assert.strictEqual(res, 'myProduct updated', 'Product should be updated')
+					done()
+				} catch (err) {
+					done(err)
+				}
 			})
 		})
 	})
